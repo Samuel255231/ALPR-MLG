@@ -1,0 +1,1 @@
+//Nouveau pour les statistiques caméra
