@@ -1,15 +1,11 @@
 from django.db import models
 from django.contrib.auth.models import AbstractUser
-from django.conf import settings
-from rest_framework.authtoken.models import Token
-
 
 
 class User(AbstractUser):
     ROLE_CHOICES = (
         ('admin', 'Administrateur'),
-        ('quai', 'Agent de quai'),
-        ('securite', 'Sécurité')
+        ('operateur', 'Opérateur'),
     )
     email = models.EmailField(
         blank=True,
@@ -21,5 +17,8 @@ class User(AbstractUser):
         null=True,
         blank=True
     )
-    role = models.CharField(max_length=15, choices=ROLE_CHOICES)
-    
+    role = models.CharField(max_length=15, choices=ROLE_CHOICES, default='operateur')
+
+    @property
+    def est_admin(self):
+        return self.is_superuser or self.role == 'admin'

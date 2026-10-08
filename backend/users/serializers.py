@@ -19,7 +19,8 @@ class UserSerializer(serializers.ModelSerializer):
 class CustomUserSerializer(serializers.ModelSerializer):
     class Meta:
         model = get_user_model()
-        fields = ['id','username', 'password', 'email','telephone','first_name','last_name','role']
+        # pas de mot de passe ici : cette sortie est renvoyée au navigateur à la connexion
+        fields = ['id','username', 'email','telephone','first_name','last_name','role']
 class ChangePasswordSerializer(serializers.ModelSerializer):
     password = serializers.CharField(write_only=True, required=True, validators=[validate_password])
     password2 = serializers.CharField(write_only=True, required=True)

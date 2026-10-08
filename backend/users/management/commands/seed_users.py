@@ -1,37 +1,29 @@
-from django.core.management.base import BaseCommand
-from django.contrib.auth import get_user_model
+import os
 
-User = get_user_model()
+from django.core.management.base import BaseCommand, CommandError
+
+from users.models import User
+
 
 class Command(BaseCommand):
-    help = "Seed initial users"
+    help = "Crée le premier compte administrateur (mot de passe lu dans ADMIN_PASSWORD du .env)"
 
-    def handle(self, *args, **kwargs):
-        users = [
-            {
-                "username": "admin",
-                "email": "admin@gmail.com",
-                "first_name": "RAMANANKASINA",
-                "last_name": "Nicolas",
-                "password": "admin 123",
-                "role": "admin",
-                "telephone":"0346686338",
-            }
-        ]
+    def handle(self, *args, **options):
+        username = os.getenv('ADMIN_USERNAME', 'admin')
+        password = os.getenv('ADMIN_PASSWORD')
+        email = os.getenv('ADMIN_EMAIL', '')
 
-        for u in users:
-            if not User.objects.filter(username=u["username"]).exists():
-                user = User.objects.create_user(
-                    username=u["username"],
-                    email=u["email"],
-                    first_name=u["first_name"],
-                    last_name=u["last_name"],
-                    password=u["password"],
-                    telephone=u["telephone"],
-                )
-                if "role" in u:
-                    user.role = u["role"]
-                user.save()
-                self.stdout.write(self.style.SUCCESS(f"✔ User '{u['username']}' created."))
-            else:
-                self.stdout.write(self.style.WARNING(f"⚠ User '{u['username']}' already exists."))
+        if not password:
+            raise CommandError("ADMIN_PASSWORD est absent du .env : ajoutez-le puis relancez la commande.")
+
+        if User.objects.filter(username=username).exists():
+            self.stdout.write(self.style.WARNING(f"Le compte '{username}' existe déjà."))
+            return
+
+        User.objects.create_superuser(
+            username=username,
+            email=email,
+            password=password,
+            role='admin',
+        )
+        self.stdout.write(self.style.SUCCESS(f"Compte administrateur '{username}' créé."))

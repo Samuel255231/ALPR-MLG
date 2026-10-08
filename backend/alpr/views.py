@@ -2,7 +2,7 @@ import os
 import tempfile
 
 from rest_framework.decorators import api_view, permission_classes
-from rest_framework.permissions import AllowAny, IsAuthenticated
+from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 from django.db.models.functions import TruncDay
 from django.db.models import Count
@@ -12,6 +12,24 @@ from django.http import HttpResponse
 from camera.models import Camera
 from .models import Plaque
 from .services.detector import detect_plate, detect_plate_video
+
+
+EXTENSIONS_VIDEO = {'.mp4', '.avi', '.mov', '.mkv', '.webm', '.m4v'}
+
+
+def statut_plaque(plaque):
+    """Résultat de la lecture d'une plaque.
+
+    reconnue   : texte au format malgache (4 chiffres + 2 ou 3 lettres), lu avec assez de confiance
+    illisible  : rien de lisible, à vérifier à la main
+    a_verifier : lecture partielle ou douteuse
+    """
+    if plaque["numero"] == "INCONNU":
+        return "illisible"
+    # 0.7 : sur nos plaques d'essai, les mauvaises lectures étaient à 0.62 ou moins, les bonnes à 0.71 ou plus
+    if plaque["conforme"] and plaque["confiance_lecture"] >= 0.7:
+        return "reconnue"
+    return "a_verifier"
 
 
 def home(request):
@@ -28,12 +46,12 @@ def auth_test(request):
     })
 # --- Totals pour les cartes du dashboard ---
 @api_view(['GET'])
-@permission_classes([AllowAny])
+@permission_classes([IsAuthenticated])
 def get_totals(request):
     total_detectees = Plaque.objects.count()
     total_reconnues = Plaque.objects.filter(reconnue=True).count()
     total_uniques = Plaque.objects.values('numero').distinct().count()
-    total_non_reconnues = Plaque.objects.filter(alerte=True).count()
+    total_non_reconnues = Plaque.objects.filter(reconnue=False).count()
 
     return Response({
         "detectees": total_detectees,
@@ -43,7 +61,7 @@ def get_totals(request):
     })
 
 @api_view(['POST'])
-@permission_classes([AllowAny])
+@permission_classes([IsAuthenticated])
 def detect_and_save(request):
     """
     Reçoit une image ou une vidéo, détecte les plaques et enregistre chaque détection.
@@ -70,7 +88,10 @@ def detect_and_save(request):
 
         reponse = {"camera_name": camera.code}
 
-        if fichier.content_type.startswith("video"):
+        # certains navigateurs n'envoient pas de type pour une vidéo : on regarde aussi l'extension
+        est_video = (fichier.content_type or "").startswith("video") or extension.lower() in EXTENSIONS_VIDEO
+
+        if est_video:
             plaques, reponse["video_url"] = detect_plate_video(chemin_temp)
         else:
             plaques, reponse["image_url"] = detect_plate(chemin_temp)
@@ -79,13 +100,15 @@ def detect_and_save(request):
         Plaque.objects.bulk_create([
             Plaque(
                 numero=p["numero"],
-                reconnue=p["confidence"] > 0.7,
-                alerte=p["confidence"] < 0.4,
+                reconnue=statut_plaque(p) == "reconnue",
+                alerte=statut_plaque(p) == "illisible",
                 camera=camera,
             )
             for p in plaques
         ])
 
+        for p in plaques:
+            p["statut"] = statut_plaque(p)
         reponse["results"] = plaques
         return Response(reponse)
 
@@ -102,7 +125,7 @@ def detect_and_save(request):
 
 # Historique des détections, les plus récentes d'abord
 @api_view(['GET'])
-@permission_classes([AllowAny])
+@permission_classes([IsAuthenticated])
 def list_detections(request):
     plaques = Plaque.objects.select_related('camera').order_by('-date_detection')
 
@@ -122,7 +145,7 @@ def list_detections(request):
 
 # Données pour le graphique interactif
 @api_view(['GET'])
-@permission_classes([AllowAny])
+@permission_classes([IsAuthenticated])
 def get_chart_data(request):
     # Regrouper par jour
     data = (
@@ -150,7 +173,7 @@ def get_chart_data(request):
     return Response(result)
 #Endpoint pour Statistiques caméra (Option 1 : Caméra ↔ Plaques) 
 @api_view(['GET'])
-@permission_classes([AllowAny])
+@permission_classes([IsAuthenticated])
 def get_camera_stats(request):
     # Statistiques par caméra
     camera_stats = (
@@ -182,7 +205,7 @@ def get_camera_stats(request):
 
 #Endpoint pour Ratio Reconnues/Non reconnues 
 @api_view(['GET'])
-@permission_classes([AllowAny])
+@permission_classes([IsAuthenticated])
 def get_recognition_stats(request):
     total = Plaque.objects.count()
     reconnues = Plaque.objects.filter(reconnue=True).count()
@@ -202,7 +225,7 @@ def get_recognition_stats(request):
 
 #Endpoint pour Top 10 plaques
 @api_view(['GET'])
-@permission_classes([AllowAny])
+@permission_classes([IsAuthenticated])
 def get_top_plates(request):
     # Top 10 plaques les plus détectées
     top_plates = (
