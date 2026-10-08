@@ -1,5 +1,5 @@
 """
-URL configuration for gestion_stock project.
+URL configuration for alpr_mlg project.
 
 The `urlpatterns` list routes URLs to views. For more information please see:
     https://docs.djangoproject.com/en/5.2/topics/http/urls/
@@ -14,9 +14,16 @@ Including another URLconf
     1. Import the include() function: from django.urls import include, path
     2. Add a URL to urlpatterns:  path('blog/', include('blog.urls'))
 """
-from django.urls import path
-from .views import list_stocks
+from django.contrib import admin
+from django.urls import path, include
+from django.conf import settings
+from django.conf.urls.static import static
 
 urlpatterns = [
-    path('',list_stocks),  
-]
+    path('admin/', admin.site.urls),
+    path('cameras/', include('camera.urls')),
+    path('zones/', include('zone.urls')),
+    path('users/', include('users.urls')),
+    path('alpr/', include('alpr.urls')),
+] + static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
+

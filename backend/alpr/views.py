@@ -2,18 +2,15 @@
 from rest_framework.decorators import api_view, permission_classes
 from rest_framework.permissions import AllowAny, IsAuthenticated
 from rest_framework.response import Response
-from rest_framework.pagination import PageNumberPagination
 from django.db.models.functions import TruncDay
 from django.db.models import Count
-from rest_framework.decorators import api_view
-from rest_framework.response import Response
 from django.db import models
-from .models import Plaque, Camera, Vehicule, Proprietaire
+from camera.models import Camera
+from .models import Plaque
 from .yolo_detector import detect_plate, detect_plate_video
 from django.http import HttpResponse
 import os
 import tempfile
-from django.core.files.storage import FileSystemStorage
 
 def home(request):
     return HttpResponse("Bienvenue sur l'API ALPR_MLG")
@@ -91,7 +88,7 @@ def detect_and_save(request):
 
         response_data = {
             "results": plates,
-            "camera_name": camera.nom,
+            "camera_name": camera.code,
         }
         
         if image_url:
@@ -108,6 +105,26 @@ def detect_and_save(request):
         # Nettoyage du fichier temporaire
         if 'temp_path' in locals() and os.path.exists(temp_path):
             os.remove(temp_path)
+
+# Historique des détections, les plus récentes d'abord
+@api_view(['GET'])
+@permission_classes([AllowAny])
+def list_detections(request):
+    plaques = Plaque.objects.select_related('camera').order_by('-date_detection')
+
+    data = [
+        {
+            'id': p.id,
+            'numero': p.numero,
+            'date_detection': p.date_detection,
+            'reconnue': p.reconnue,
+            'alerte': p.alerte,
+            'camera': p.camera.code if p.camera else None,
+        }
+        for p in plaques
+    ]
+    return Response(data)
+
 
 # Données pour le graphique interactif
 @api_view(['GET'])
@@ -149,7 +166,7 @@ def get_camera_stats(request):
             total_reconnues=Count('plaque', filter=models.Q(plaque__reconnue=True)),
             total_alertes=Count('plaque', filter=models.Q(plaque__alerte=True))
         )
-        .values('id', 'nom', 'total_detectees', 'total_reconnues', 'total_alertes')
+        .values('id', 'code', 'total_detectees', 'total_reconnues', 'total_alertes')
     )
     # Calculer les taux
     data = []
@@ -159,7 +176,7 @@ def get_camera_stats(request):
         taux_alerte = (stat['total_alertes'] * 100.0 / total) if total > 0 else 0
         
         data.append({
-            'camera': stat['nom'],
+            'camera': stat['code'],
             'detectees': stat['total_detectees'],
             'reconnues': stat['total_reconnues'],
             'alertes': stat['total_alertes'],
@@ -219,155 +236,3 @@ def get_top_plates(request):
     ]
 
     return Response(data)
-
-
-@api_view(['GET'])
-@permission_classes([AllowAny])
-def get_proprietaire_by_plaque(request):
-    plaque = request.GET.get("plaque")
-    if not plaque:
-        return Response({"error": "Paramètre 'plaque' manquant"}, status=400)
-
-    try:
-        vehicule = Vehicule.objects.get(numero_plaque=plaque)
-        proprietaire = Proprietaire.objects.get(vehicule=vehicule)
-        return Response({
-            "plaque": vehicule.numero_plaque,
-            "marque": vehicule.marque,
-            "modele": vehicule.modele,
-            "statut": vehicule.statut,
-            "nom": proprietaire.nom,
-            "chauffeur": proprietaire.chauffeur
-        })
-    except Vehicule.DoesNotExist:
-        return Response({"error": "Plaque inconnue"}, status=404)
-    except Proprietaire.DoesNotExist:
-        return Response({"error": "Propriétaire non trouvé"}, status=404)
-
-@api_view(['POST'])
-@permission_classes([AllowAny])
-def add_proprietaire(request):
-    """
-    Endpoint pour ajouter un propriétaire manuellement si la plaque est inconnue.
-    """
-    plaque = request.data.get("plaque")
-    nom = request.data.get("nom")
-    marque = request.data.get("marque")
-    modele = request.data.get("modele")
-    chauffeur = request.data.get("chauffeur")
-
-    if not plaque or not nom or not marque or not modele:
-        return Response({"error": "Champs obligatoires manquants"}, status=400)
-
-    # Vérifier si le véhicule existe déjà
-    vehicule, created = Vehicule.objects.get_or_create(
-        numero_plaque=plaque,
-        defaults={"marque": marque, "modele": modele, "statut": "actif"}
-    )
-
-    # Créer ou mettre à jour le propriétaire
-    proprietaire, created_prop = Proprietaire.objects.get_or_create(
-        vehicule=vehicule,
-        defaults={"nom": nom, "chauffeur": chauffeur}
-    )
-
-    if not created_prop:
-        proprietaire.nom = nom
-        proprietaire.chauffeur = chauffeur
-        proprietaire.save()
-
-    return Response({
-        "success": True,
-        "message": "Propriétaire ajouté ou mis à jour",
-        "plaque": vehicule.numero_plaque,
-        "marque": vehicule.marque,
-        "modele": vehicule.modele,
-        "statut": vehicule.statut,
-        "nom": proprietaire.nom,
-        "chauffeur": proprietaire.chauffeur
-    })
-
-class ProprietairePagination(PageNumberPagination):
-    page_size = 10
-@api_view(['GET'])
-@permission_classes([AllowAny])
-def list_proprietaires(request):
-    search = request.GET.get("search", "")
-    proprietaires = Proprietaire.objects.all()
-
-    if search:
-        proprietaires = proprietaires.filter(
-            nom__icontains=search
-        ) | proprietaires.filter(
-            vehicule__numero_plaque__icontains=search
-        )
-
-    paginator = ProprietairePagination()
-    result_page = paginator.paginate_queryset(proprietaires, request)
-
-    data = [
-        {
-            "id": p.id,
-            "plaque": p.vehicule.numero_plaque,
-            "marque": p.vehicule.marque,
-            "modele": p.vehicule.modele,
-            "statut": p.vehicule.statut,
-            "nom": p.nom,
-            "chauffeur": p.chauffeur,
-        }
-        for p in result_page
-    ]
-
-    return paginator.get_paginated_response(data)
-
-@api_view(['DELETE'])
-@permission_classes([AllowAny])
-def delete_proprietaire(request, id):
-    try:
-        proprietaire = Proprietaire.objects.get(id=id)
-        proprietaire.delete()
-        return Response({"success": True, "message": "Propriétaire supprimé"})
-    except Proprietaire.DoesNotExist:
-        return Response({"error": "Propriétaire introuvable"}, status=404)
-    
-@api_view(['PUT'])
-@permission_classes([AllowAny])
-def update_proprietaire(request, id):
-    """
-    Endpoint pour modifier les informations d'un propriétaire et de son véhicule.
-    """
-    try:
-        proprietaire = Proprietaire.objects.get(id=id)
-        vehicule = proprietaire.vehicule
-
-        # Récupérer les champs envoyés
-        nom = request.data.get("nom", proprietaire.nom)
-        chauffeur = request.data.get("chauffeur", proprietaire.chauffeur)
-        marque = request.data.get("marque", vehicule.marque)
-        modele = request.data.get("modele", vehicule.modele)
-        statut = request.data.get("statut", vehicule.statut)
-
-        # Mise à jour
-        proprietaire.nom = nom
-        proprietaire.chauffeur = chauffeur
-        proprietaire.save()
-
-        vehicule.marque = marque
-        vehicule.modele = modele
-        vehicule.statut = statut
-        vehicule.save()
-
-        return Response({
-            "success": True,
-            "message": "Propriétaire mis à jour",
-            "id": proprietaire.id,
-            "plaque": vehicule.numero_plaque,
-            "marque": vehicule.marque,
-            "modele": vehicule.modele,
-            "statut": vehicule.statut,
-            "nom": proprietaire.nom,
-            "chauffeur": proprietaire.chauffeur
-        })
-
-    except Proprietaire.DoesNotExist:
-        return Response({"error": "Propriétaire introuvable"}, status=404)

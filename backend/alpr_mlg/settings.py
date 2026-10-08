@@ -1,5 +1,5 @@
 """
-Django settings for gestion_stock project.
+Django settings for alpr_mlg project.
 """
 
 from pathlib import Path
@@ -34,16 +34,10 @@ INSTALLED_APPS = [
     # CORS
     'corsheaders',
 
-    # Apps existantes
-    'stock',
-    'mouvement',
+    # Apps du projet
     'camera',
     'zone',
-    'camion',
-    'mouvement_camion',
     'users',
-
-    # ✅ Nouvelle app ALPR
     'alpr',
 ]
 
@@ -89,7 +83,7 @@ CORS_ALLOWED_ORIGINS = [
 # ⚠️ En développement, tu peux autoriser tout
 CORS_ALLOW_ALL_ORIGINS = True
 
-ROOT_URLCONF = 'gestion_stock.urls'
+ROOT_URLCONF = 'alpr_mlg.urls'
 
 TEMPLATES = [
     {
@@ -106,13 +100,13 @@ TEMPLATES = [
     },
 ]
 
-WSGI_APPLICATION = 'gestion_stock.wsgi.application'
+WSGI_APPLICATION = 'alpr_mlg.wsgi.application'
 
 # Database
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.postgresql_psycopg2',
-        'NAME': 'gestion_stock',
+        'NAME': 'alpr_mlg',
         'USER': 'postgres',
         'PASSWORD': 'samuel2021',
         'HOST': 'localhost',
