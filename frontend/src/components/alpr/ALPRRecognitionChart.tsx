@@ -1,6 +1,6 @@
-// src/components/alpr/ALPRRecognitionChart.tsx
 "use client"
 import * as React from "react"
+import api from "@/api/client"
 import { PieChart, Pie, Cell, Tooltip, ResponsiveContainer } from "recharts"
 import { Card, CardHeader, CardTitle, CardContent, CardDescription } from "@/components/ui/card"
 
@@ -25,9 +25,9 @@ export default function ALPRRecognitionChart() {
   React.useEffect(() => {
     const fetchData = async () => {
       try {
-        const res = await fetch(`http://localhost:8000/alpr/dashboard/recognition-stats/`)
-        const json = await res.json()
-        
+        const res = await api.get("/alpr/dashboard/recognition-stats/")
+        const json = res.data
+
         const totalPlaques = json.total || 1
         const chartData: RecognitionData[] = [
           {

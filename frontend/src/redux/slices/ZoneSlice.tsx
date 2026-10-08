@@ -1,5 +1,5 @@
 import { createSlice, createAsyncThunk, type PayloadAction } from "@reduxjs/toolkit"
-import axios from "axios"
+import api from "@/api/client"
 
 export interface Zone {
     id: number
@@ -16,13 +16,13 @@ const initialState: ZonetState = {
     loading: false,
     error: null,
 }
-const API_URL = "http://localhost:8000/zones/"
+const API_PATH = "/zones/"
 
 export const fetchZones = createAsyncThunk<Zone[], void, { rejectValue: string }>(
     "zones/fetchZones",
     async (_, { rejectWithValue }) => {
         try {
-            const response = await axios.get<Zone[]>(API_URL)
+            const response = await api.get<Zone[]>(API_PATH)
             return response.data
         } catch (err: any) {
             return rejectWithValue(err.response?.data || err.message)
@@ -34,7 +34,7 @@ export const addZone = createAsyncThunk<Zone, Omit<Zone, "id">, { rejectValue: s
     "zones/addZone",
     async (zoneDate, { rejectWithValue }) => {
         try {
-            const response = await axios.post<Zone>(API_URL, zoneDate)
+            const response = await api.post<Zone>(API_PATH, zoneDate)
             return response.data
         } catch (err: any) {
             return rejectWithValue(err.response?.data || err.message)
@@ -49,7 +49,7 @@ export const updateZone = createAsyncThunk<
     "zones/updateZone",
     async (zoneData, { rejectWithValue }) => {
         try {
-            const response = await axios.put<Zone>(`${API_URL}${zoneData.id}/`, zoneData)
+            const response = await api.put<Zone>(`${API_PATH}${zoneData.id}/`, zoneData)
             return response.data
         } catch (err: any) {
             return rejectWithValue(err.response?.data || err.message)
@@ -65,7 +65,7 @@ export const deleteZone = createAsyncThunk<
     "zones/deleteZone",
     async (id, { rejectWithValue }) => {
         try {
-            await axios.delete(`${API_URL}${id}/`)
+            await api.delete(`${API_PATH}${id}/`)
             return id
         } catch (err: any) {
             return rejectWithValue(err.response?.data || err.message)

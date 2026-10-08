@@ -1,0 +1,21 @@
+# Django / API REST
+Django==5.2.18
+djangorestframework==3.16.1
+djangorestframework-simplejwt==5.5.1
+django-cors-headers==4.9.0
+
+# Lecture du fichier .env
+python-dotenv==1.2.4
+
+# Base de données PostgreSQL
+psycopg2-binary==2.9.10
+
+# Vision / IA
+numpy==2.2.6
+opencv-python==4.12.0.88
+opencv-python-headless==4.12.0.88
+Pillow==11.3.0
+torch==2.8.0
+torchvision==0.23.0
+ultralytics==8.3.208
+easyocr==1.7.2

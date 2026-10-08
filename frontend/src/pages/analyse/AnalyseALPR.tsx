@@ -1,5 +1,5 @@
-// src/pages/analyse/AnalyseALPR.tsx
 import React, { useEffect, useState } from "react"
+import { API_URL } from "@/config"
 import { useDispatch, useSelector } from "react-redux"
 import type { AppDispatch, RootState } from "@/redux/store"
 import { fetchCameras } from "@/redux/slices/CameraSlice"
@@ -307,7 +307,7 @@ const AnalyseALPR: React.FC = () => {
                   {data.image_url && (
                     <div className="border rounded-lg overflow-hidden">
                       <img
-                        src={`http://localhost:8000${data.image_url}`}
+                        src={`${API_URL}${data.image_url}`}
                         alt="Résultat ALPR annoté"
                         className="w-full h-auto max-h-96 object-contain"
                       />
@@ -317,7 +317,7 @@ const AnalyseALPR: React.FC = () => {
                   {data.video_url && (
                     <div className="border rounded-lg overflow-hidden">
                       <video
-                        src={`http://localhost:8000${data.video_url}`}
+                        src={`${API_URL}${data.video_url}`}
                         controls
                         className="w-full h-auto"
                       />

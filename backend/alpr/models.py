@@ -2,7 +2,8 @@ from django.db import models
 
 
 class Plaque(models.Model):
-    numero = models.CharField(max_length=20, unique=True)
+    # Une ligne par détection : la même plaque peut apparaître plusieurs fois
+    numero = models.CharField(max_length=20, db_index=True)
     date_detection = models.DateTimeField(auto_now_add=True)
     reconnue = models.BooleanField(default=False)
     alerte = models.BooleanField(default=False)

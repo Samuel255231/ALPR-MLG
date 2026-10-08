@@ -1,5 +1,5 @@
 import { createSlice, createAsyncThunk } from "@reduxjs/toolkit"
-import axios from "axios"
+import api from "@/api/client"
 
 export interface Detection {
     id: number
@@ -22,13 +22,13 @@ const initialState: DetectionState = {
     error: null,
 }
 
-const API_URL = "http://localhost:8000/alpr/detections/"
+const API_PATH = "/alpr/detections/"
 
 export const fetchDetections = createAsyncThunk<Detection[], void, { rejectValue: string }>(
     "detections/fetchDetections",
     async (_, { rejectWithValue }) => {
         try {
-            const response = await axios.get<Detection[]>(API_URL)
+            const response = await api.get<Detection[]>(API_PATH)
             return response.data
         } catch (err: any) {
             return rejectWithValue(err.response?.data || err.message)

@@ -16,14 +16,10 @@ htmlcov/
 .env.*
 !.env.example
 
-# ===== IA : poids de modèles et caches (fichiers lourds, non versionnés) =====
-# Le modèle backend/models/best.pt doit être fourni séparément (44 Mo).
-*.pt
 *.pth
 *.onnx
 *.cache
 
-# ===== Fichiers générés / uploadés (backend) =====
 backend/media/
 backend/staticfiles/
 backend/temp_*

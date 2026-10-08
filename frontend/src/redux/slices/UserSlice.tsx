@@ -1,5 +1,5 @@
 import { createSlice, createAsyncThunk, type PayloadAction } from "@reduxjs/toolkit"
-import axios from "axios"
+import api from "@/api/client"
 
 
 export interface User {
@@ -26,13 +26,13 @@ const initialState: UserState = {
     loading: false,
     error: null,
 }
-const API_URL = "http://localhost:8000/users/"
+const API_PATH = "/users/"
 
 export const fetchUsers = createAsyncThunk<User[], void, { rejectValue: string }>(
     "users/fetchUsers",
     async (_, { rejectWithValue }) => {
         try {
-            const response = await axios.get<User[]>(API_URL)
+            const response = await api.get<User[]>(API_PATH)
             return response.data
         } catch (err: any) {
             return rejectWithValue(err.response?.data || err.message)
@@ -44,7 +44,7 @@ export const addUsers = createAsyncThunk<User, Omit<User, "id" | 'last_login' | 
     "users/addUsers",
     async (dataUser, { rejectWithValue }) => {
         try {
-            const response = await axios.post<User>(`${API_URL}registration/`, dataUser)
+            const response = await api.post<User>(`${API_PATH}registration/`, dataUser)
             return response.data
         } catch (err: any) {
             return rejectWithValue(err.response?.data || err.message)
@@ -60,7 +60,7 @@ export const deleteUsers = createAsyncThunk<
     "users/deleteUsers",
     async (id, { rejectWithValue }) => {
         try {
-            await axios.delete(`${API_URL}${id}/`)
+            await api.delete(`${API_PATH}${id}/`)
             return id
         } catch (err: any) {
             return rejectWithValue(err.response?.data || err.message)
@@ -76,7 +76,7 @@ export const toggleUserActive = createAsyncThunk<
     "users/toggleUserActive",
     async (userId, { rejectWithValue }) => {
         try {
-            const response = await axios.post(`${API_URL}${userId}/status_compte/`)
+            const response = await api.post(`${API_PATH}${userId}/status_compte/`)
             return {
                 userId,
                 is_active: response.data.is_active,
@@ -96,7 +96,7 @@ export const resetUserPassword = createAsyncThunk<
     "users/resetUserPassword",
     async ({ userId, new_password,password1 }, { rejectWithValue }) => {
         try {
-            const response = await axios.put(`${API_URL}reset_password/`, {
+            const response = await api.put(`${API_PATH}reset_password/`, {
                 user_id: userId,
                 password:new_password,
                 password2:password1

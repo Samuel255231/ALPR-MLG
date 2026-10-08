@@ -1,6 +1,6 @@
-// src/components/alpr/ALPRBarChart.tsx
 "use client"
 import * as React from "react"
+import api from "@/api/client"
 import { BarChart, Bar, XAxis, CartesianGrid, Tooltip, ResponsiveContainer, YAxis } from "recharts"
 import { Card, CardHeader, CardTitle, CardContent, CardDescription } from "@/components/ui/card"
 
@@ -17,9 +17,8 @@ export default function ALPRBarChart() {
   React.useEffect(() => {
     const fetchData = async () => {
       try {
-        const res = await fetch(`http://localhost:8000/alpr/dashboard/top-plates/`)
-        const json: TopPlate[] = await res.json()
-        setData(json)
+        const res = await api.get<TopPlate[]>("/alpr/dashboard/top-plates/")
+        setData(res.data)
       } catch (error) {
         console.error("Erreur fetch top plates:", error)
       }

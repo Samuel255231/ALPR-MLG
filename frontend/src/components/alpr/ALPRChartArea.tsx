@@ -1,8 +1,6 @@
-// Adaptation de chart-area-interactive.tsx pour l'évolution ALPR
-
-// src/components/alpr/ALPRChartArea.tsx
 "use client"
 import * as React from "react"
+import api from "@/api/client"
 import { Area, AreaChart, CartesianGrid, XAxis } from "recharts"
 import { Card, CardAction, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { ChartContainer, ChartTooltip, ChartTooltipContent } from "@/components/ui/chart"
@@ -29,10 +27,8 @@ export default function ALPRChartArea() {
   React.useEffect(() => {
     const fetchData = async () => {
       try {
-        const res = await fetch(`http://localhost:8000/alpr/chart_data/`)
-        if (!res.ok) throw new Error("Erreur fetch API")
-        const data: ChartDataItem[] = await res.json()
-        setChartData(data)
+        const res = await api.get<ChartDataItem[]>("/alpr/chart_data/")
+        setChartData(res.data)
       } catch (error) {
         console.error("Erreur récupération des données:", error)
       }

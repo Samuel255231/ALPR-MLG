@@ -1,4 +1,5 @@
 import { createSlice, createAsyncThunk } from "@reduxjs/toolkit"
+import api from "@/api/client"
 
 type ALPRTotals = {
   detectees: number
@@ -27,9 +28,8 @@ const initialState: ALPRState = {
 export const fetchALPRTotals = createAsyncThunk(
   "alpr/fetchTotals",
   async () => {
-    const res = await fetch(`http://localhost:8000/alpr/totals/`)
-    if (!res.ok) throw new Error("Erreur API ALPR")
-    return (await res.json()) as ALPRTotals
+    const res = await api.get<ALPRTotals>("/alpr/totals/")
+    return res.data
   }
 )
 

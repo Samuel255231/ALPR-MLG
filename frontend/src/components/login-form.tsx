@@ -6,7 +6,7 @@ import { Button } from "@/components/ui/button"
 import { Card, CardContent } from "@/components/ui/card"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
-import imgLogin from "../assets/loginImg.png"
+import imgLogin from "../assets/image_alpr_mlg.png"
 import { useDispatch, useSelector } from "react-redux"
 import type { AppDispatch, RootState } from "@/redux/store"
 import { login } from "@/redux/slices/AuthSlice"
@@ -105,7 +105,7 @@ export function LoginForm({
             <img
               src={imgLogin}
               alt="Login illustration"
-              className="absolute inset-0 h-full w-full object-cover dark:brightness-[0.2] dark:grayscale"
+              className="absolute inset-0 h-full w-full bg-white object-contain dark:brightness-[0.2] dark:grayscale"
             />
           </div>
         </CardContent>

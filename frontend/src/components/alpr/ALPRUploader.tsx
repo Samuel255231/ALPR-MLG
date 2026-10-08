@@ -1,8 +1,7 @@
-
-// src/components/alpr/ALPRUploader.tsx
-
 "use client"
 import { useState } from "react"
+import { API_URL } from "@/config"
+import api from "@/api/client"
 
 type PlateResult = {
   numero: string
@@ -24,20 +23,17 @@ export default function ALPRUploader() {
     formData.append("file", file)
 
     try {
-      const res = await fetch("http://localhost:8000/alpr/detect/", {
-        method: "POST",
-        body: formData,
-      })
-      const data = await res.json()
+      const res = await api.post("/alpr/detect/", formData)
+      const data = res.data
       setResults(data.results)
 
       if (data.image_url) {
-        setAnnotatedImage("http://localhost:8000" + data.image_url)
+        setAnnotatedImage(API_URL + data.image_url)
         setAnnotatedVideo(null)
       }
 
       if (data.video_url) {
-        setAnnotatedVideo("http://localhost:8000" + data.video_url)
+        setAnnotatedVideo(API_URL + data.video_url)
         setAnnotatedImage(null)
       }
 

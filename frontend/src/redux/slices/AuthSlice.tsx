@@ -1,5 +1,6 @@
 import { createSlice, createAsyncThunk, type PayloadAction } from "@reduxjs/toolkit"
-import axios from "axios"
+import api from "@/api/client"
+import { API_URL } from "@/config"
 import type { RootState } from "../store"
 
 export type Role = "admin"|"quai"| "securite"
@@ -49,7 +50,7 @@ export const login = createAsyncThunk<TokenData, LoginParams, { rejectValue: str
   "auth/login",
   async ({ username, password }, { rejectWithValue }) => {
     try {
-      const response = await axios.post("http://localhost:8000/users/login/", {
+      const response = await api.post("/users/login/", {
         username,
         password,
       })
@@ -66,7 +67,7 @@ export const refreshToken = createAsyncThunk<TokenData, void, { state: RootState
   async (_, { getState, rejectWithValue }) => {
     const { userToken } = getState().auth
     try {
-      const response = await fetch("http://localhost:8000/auth/token/refresh/", {
+      const response = await fetch(`${API_URL}/auth/token/refresh/`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -104,7 +105,7 @@ export const updatePassword = createAsyncThunk<TokenData, UpdatePasswordParams, 
     }
 
     try {
-      const response = await fetch("http://localhost:8000/users/change_password/", {
+      const response = await fetch(`${API_URL}/users/change_password/`, {
         method: "PUT",
         headers: {
           "Content-Type": "application/json",

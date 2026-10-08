@@ -1,5 +1,7 @@
 // src/redux/slices/ALPRSlice.ts
 import { createSlice, createAsyncThunk, type PayloadAction } from "@reduxjs/toolkit"
+import api from "@/api/client"
+
 interface PlateResult {
   numero: string
   confidence: number
@@ -36,25 +38,13 @@ export const detectALPRVideo = createAsyncThunk<
       formData.append("file", file)
       formData.append("camera_id", camera_id.toString())
 
-      const res = await fetch("http://localhost:8000/alpr/detect/", {
-        method: "POST",
-        body: formData,
-      })
-
-      if (!res.ok) {
-        const errorText = await res.text()
-        return rejectWithValue(errorText)
-      }
-
-      const data: ALPRResponse = await res.json()
-      return data
-    } catch (error: unknown) {
-  if (error instanceof Error) {
-    return rejectWithValue(error.message);
-  }
-  return rejectWithValue("Erreur inconnue");
-}
-
+      const res = await api.post<ALPRResponse>("/alpr/detect/", formData)
+      return res.data
+    } catch (error: any) {
+      // on affiche le message renvoyé par le backend quand il y en a un
+      const message = error.response?.data?.error ?? error.message ?? "Erreur inconnue"
+      return rejectWithValue(message)
+    }
   }
 )
 

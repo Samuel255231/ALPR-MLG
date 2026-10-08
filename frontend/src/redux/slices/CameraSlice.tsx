@@ -1,7 +1,7 @@
 
 //src\redux\slices\CameraSlice.tsx
 import { createSlice, createAsyncThunk, type PayloadAction } from "@reduxjs/toolkit"
-import axios from "axios"
+import api from "@/api/client"
 
 type StatusType = "Actif" | "En maintenance" | "En panne";
 export interface Zone {
@@ -29,13 +29,13 @@ const initialState: CameratState = {
     loading: false,
     error: null,
 }
-const API_URL = "http://localhost:8000/cameras/"
+const API_PATH = "/cameras/"
 
 export const fetchCameras = createAsyncThunk<Camera[], void, { rejectValue: string }>(
     "cameras/fetchCameras",
     async (_, { rejectWithValue }) => {
         try {
-            const response = await axios.get<Camera[]>(API_URL)
+            const response = await api.get<Camera[]>(API_PATH)
             return response.data
         } catch (err: any) {
             return rejectWithValue(err.response?.data || err.message)
@@ -47,7 +47,7 @@ export const addCamera = createAsyncThunk<Camera, Omit<Camera, "id" | 'descripti
     "cameras/addCamra",
     async (cameraData, { rejectWithValue }) => {
         try {
-            const response = await axios.post<Camera>(API_URL, cameraData)
+            const response = await api.post<Camera>(API_PATH, cameraData)
             return response.data
         } catch (err: any) {
             return rejectWithValue(err.response?.data || err.message)
@@ -74,8 +74,8 @@ export const updateCamera = createAsyncThunk<
                     : cameraData.zone, // ✅ zone = id seulement
             }
 
-            const response = await axios.put<Camera>(
-                `${API_URL}${cameraData.id}/`,
+            const response = await api.put<Camera>(
+                `${API_PATH}${cameraData.id}/`,
                 payload
             )
 
@@ -93,7 +93,7 @@ export const deleteCamera = createAsyncThunk<
     "cameras/deleteCamera",
     async (id, { rejectWithValue }) => {
         try {
-            await axios.delete(`${API_URL}${id}/`)
+            await api.delete(`${API_PATH}${id}/`)
             return id
         } catch (err: any) {
             return rejectWithValue(err.response?.data || err.message)

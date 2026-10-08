@@ -1,16 +1,18 @@
-#alpr\views.py
+import os
+import tempfile
+
 from rest_framework.decorators import api_view, permission_classes
 from rest_framework.permissions import AllowAny, IsAuthenticated
 from rest_framework.response import Response
 from django.db.models.functions import TruncDay
 from django.db.models import Count
 from django.db import models
+from django.http import HttpResponse
+
 from camera.models import Camera
 from .models import Plaque
-from .yolo_detector import detect_plate, detect_plate_video
-from django.http import HttpResponse
-import os
-import tempfile
+from .services.detector import detect_plate, detect_plate_video
+
 
 def home(request):
     return HttpResponse("Bienvenue sur l'API ALPR_MLG")
@@ -44,67 +46,59 @@ def get_totals(request):
 @permission_classes([AllowAny])
 def detect_and_save(request):
     """
-    Endpoint pour uploader une image ou une vidéo et détecter les plaques.
+    Reçoit une image ou une vidéo, détecte les plaques et enregistre chaque détection.
     """
-    file = request.FILES.get('file')
+    fichier = request.FILES.get('file')
     camera_id = request.POST.get("camera_id")
 
-    if not file:
+    if not fichier:
         return Response({"error": "Aucun fichier fourni"}, status=400)
 
     try:
         camera = Camera.objects.get(id=camera_id)
-    except Camera.DoesNotExist:
+    except (Camera.DoesNotExist, ValueError, TypeError):
         return Response({"error": "Caméra introuvable"}, status=400)
 
+    chemin_temp = None
     try:
-        # Sauvegarde temporaire du fichier
-        import tempfile
-        import os
-        
-        # Créer un fichier temporaire
-        suffix = os.path.splitext(file.name)[1]  # .jpg, .mp4, etc.
-        with tempfile.NamedTemporaryFile(delete=False, suffix=suffix) as tmp_file:
-            for chunk in file.chunks():
-                tmp_file.write(chunk)
-            temp_path = tmp_file.name
+        # Le détecteur travaille sur un vrai fichier : on écrit l'upload dans un fichier temporaire
+        extension = os.path.splitext(fichier.name)[1]
+        with tempfile.NamedTemporaryFile(delete=False, suffix=extension) as temp:
+            for morceau in fichier.chunks():
+                temp.write(morceau)
+            chemin_temp = temp.name
 
-        # Détection selon le type MIME
-        if file.content_type.startswith("video"):
-            plates, video_url = detect_plate_video(temp_path)
-            image_url = None
+        reponse = {"camera_name": camera.code}
+
+        if fichier.content_type.startswith("video"):
+            plaques, reponse["video_url"] = detect_plate_video(chemin_temp)
         else:
-            plates, image_url = detect_plate(temp_path)
-            video_url = None
+            plaques, reponse["image_url"] = detect_plate(chemin_temp)
 
-        # Sauvegarde dans la base
-        for p in plates:
-            Plaque.objects.create(
+        # Une ligne par détection
+        Plaque.objects.bulk_create([
+            Plaque(
                 numero=p["numero"],
-                reconnue=True if p["confidence"] > 0.7 else False,
-                alerte=True if p["confidence"] < 0.4 else False,
-                camera=camera
+                reconnue=p["confidence"] > 0.7,
+                alerte=p["confidence"] < 0.4,
+                camera=camera,
             )
+            for p in plaques
+        ])
 
-        response_data = {
-            "results": plates,
-            "camera_name": camera.code,
-        }
-        
-        if image_url:
-            response_data["image_url"] = image_url
-        if video_url:
-            response_data["video_url"] = video_url
+        reponse["results"] = plaques
+        return Response(reponse)
 
-        return Response(response_data)
-
-    except Exception as e:
-        return Response({"error": str(e)}, status=500)
-
+    except FileNotFoundError as erreur:
+        # en pratique : le fichier du modèle YOLO est introuvable
+        return Response({"error": str(erreur)}, status=503)
+    except ValueError as erreur:
+        return Response({"error": str(erreur)}, status=400)
+    except Exception as erreur:
+        return Response({"error": str(erreur)}, status=500)
     finally:
-        # Nettoyage du fichier temporaire
-        if 'temp_path' in locals() and os.path.exists(temp_path):
-            os.remove(temp_path)
+        if chemin_temp and os.path.exists(chemin_temp):
+            os.remove(chemin_temp)
 
 # Historique des détections, les plus récentes d'abord
 @api_view(['GET'])

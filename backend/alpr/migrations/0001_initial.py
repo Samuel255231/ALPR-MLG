@@ -15,7 +15,7 @@ class Migration(migrations.Migration):
             name='Plaque',
             fields=[
                 ('id', models.BigAutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
-                ('numero', models.CharField(max_length=20, unique=True)),
+                ('numero', models.CharField(db_index=True, max_length=20)),
                 ('date_detection', models.DateTimeField(auto_now_add=True)),
                 ('reconnue', models.BooleanField(default=False)),
                 ('alerte', models.BooleanField(default=False)),
