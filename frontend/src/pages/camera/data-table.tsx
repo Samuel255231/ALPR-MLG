@@ -27,6 +27,7 @@ import { IconPlus } from "@tabler/icons-react"
 import { DataTableViewOptions } from "@/components/datatable/dataTable-view-options"
 import { DataTablePagination } from "@/components/datatable/datatable-pagination"
 import AjoutCamera from "./AjoutCamera"
+import { useRole } from "@/hooks/use-role"
 
 interface DataTableProps<TData, TValue> {
     columns: ColumnDef<TData, TValue>[]
@@ -37,6 +38,7 @@ export function DataTable<TData, TValue>({
     columns,
     data,
 }: DataTableProps<TData, TValue>) {
+    const { estAdmin } = useRole()
     const [addZone,setAddZone]=React.useState<boolean>(false)
     const [sorting, setSorting] = React.useState<SortingState>([])
     const [columnFilters, setColumnFilters] = React.useState<ColumnFiltersState>(
@@ -77,10 +79,12 @@ export function DataTable<TData, TValue>({
                 />
                 <div className="flex items-center gap-2">
                     <DataTableViewOptions table={table} />
-                    <Button className="cursor-pointer bg-green-500 hover:bg-green-600" variant="outline" size="sm" onClick={()=>setAddZone(!addZone)}>
-                        <IconPlus />
-                        <span className="hidden lg:inline">Nouveau camera</span>
-                    </Button>
+                    {estAdmin && (
+                        <Button className="cursor-pointer bg-green-500 hover:bg-green-600" variant="outline" size="sm" onClick={()=>setAddZone(!addZone)}>
+                            <IconPlus />
+                            <span className="hidden lg:inline">Nouvelle caméra</span>
+                        </Button>
+                    )}
                 </div>
             </div>
             <div className="overflow-hidden rounded-md border">
@@ -128,7 +132,7 @@ export function DataTable<TData, TValue>({
                 </Table>
             </div>
             <DataTablePagination table={table} />
-            <AjoutCamera open={addZone} setOpen={setAddZone} />
+            {estAdmin && <AjoutCamera open={addZone} setOpen={setAddZone} />}
 
         </div>
     )

@@ -14,7 +14,6 @@ import { z } from "zod"
 import {
     Form,
     FormControl,
-    FormDescription,
     FormField,
     FormItem,
     FormLabel,
@@ -22,7 +21,6 @@ import {
 } from "@/components/ui/form"
 import { useDispatch } from "react-redux"
 import type { AppDispatch } from "@/redux/store"
-import { addZone } from "@/redux/slices/ZoneSlice"
 import { addUsers } from "@/redux/slices/UserSlice"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 
@@ -62,7 +60,7 @@ const AjoutUser: React.FC<AjoutUserProps> = ({ open, setOpen }) => {
             last_name: "",
             telephone: "",
             password: "",
-            role: "",
+            role: "operateur",
         },
     })
 
@@ -177,8 +175,7 @@ const AjoutUser: React.FC<AjoutUserProps> = ({ open, setOpen }) => {
                                             </FormControl>
                                             <SelectContent>
                                                 <SelectItem value="admin">Administrateur</SelectItem>
-                                                <SelectItem value="quai">Agent de quai</SelectItem>
-                                                <SelectItem value="securite">Agent de Sécurité</SelectItem>
+                                                <SelectItem value="operateur">Opérateur</SelectItem>
                                             </SelectContent>
                                         </Select>
                                         <FormMessage />

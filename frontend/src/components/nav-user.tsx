@@ -2,7 +2,6 @@ import {
   IconCreditCard,
   IconDotsVertical,
   IconLogout,
-  IconNotification,
   IconUserCircle,
 } from "@tabler/icons-react"
 
@@ -37,7 +36,7 @@ interface NavUserProps {
   user: {
     username: string
     email: string
-    role: "admin" | "programme" | "user"
+    role: "admin" | "operateur"
     avatar?: string
   }
 }

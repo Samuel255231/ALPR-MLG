@@ -1,7 +1,7 @@
 
 //src\redux\slices\CameraSlice.tsx
 import { createSlice, createAsyncThunk, type PayloadAction } from "@reduxjs/toolkit"
-import api from "@/api/client"
+import api, { messageErreur } from "@/api/client"
 
 type StatusType = "Actif" | "En maintenance" | "En panne";
 export interface Zone {
@@ -37,8 +37,8 @@ export const fetchCameras = createAsyncThunk<Camera[], void, { rejectValue: stri
         try {
             const response = await api.get<Camera[]>(API_PATH)
             return response.data
-        } catch (err: any) {
-            return rejectWithValue(err.response?.data || err.message)
+        } catch (err) {
+            return rejectWithValue(messageErreur(err))
         }
     }
 )
@@ -49,14 +49,17 @@ export const addCamera = createAsyncThunk<Camera, Omit<Camera, "id" | 'descripti
         try {
             const response = await api.post<Camera>(API_PATH, cameraData)
             return response.data
-        } catch (err: any) {
-            return rejectWithValue(err.response?.data || err.message)
+        } catch (err) {
+            return rejectWithValue(messageErreur(err))
         }
     }
 )
+// Pour la mise à jour, la zone peut être donnée sous forme d'objet ou seulement d'identifiant
+type CameraAModifier = Omit<Camera, "zone"> & { zone: Zone | number }
+
 export const updateCamera = createAsyncThunk<
     Camera,
-    Camera,
+    CameraAModifier,
     { rejectValue: string }
 >(
     "cameras/updateCamera",
@@ -80,8 +83,8 @@ export const updateCamera = createAsyncThunk<
             )
 
             return response.data
-        } catch (err: any) {
-            return rejectWithValue(err.response?.data || err.message)
+        } catch (err) {
+            return rejectWithValue(messageErreur(err))
         }
     }
 )
@@ -95,8 +98,8 @@ export const deleteCamera = createAsyncThunk<
         try {
             await api.delete(`${API_PATH}${id}/`)
             return id
-        } catch (err: any) {
-            return rejectWithValue(err.response?.data || err.message)
+        } catch (err) {
+            return rejectWithValue(messageErreur(err))
         }
     }
 )

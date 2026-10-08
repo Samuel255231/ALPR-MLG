@@ -1,11 +1,11 @@
-import { type ColumnDef } from "@tanstack/react-table"
+import { type ColumnDef, type Row } from "@tanstack/react-table"
 import { Badge } from "@/components/ui/badge"
 import { DataTableColumnHeader } from "@/components/datatable/data-table-column-header"
 import type { Detection } from "@/redux/slices/DetectionSlice"
 
 // Filtre de dates : filterValue = [debut, fin], format yyyy-mm-dd
-const dateBetweenFilter = (row: any, columnId: string, filterValue: [string, string]) => {
-    const rowDate = new Date(row.original[columnId])
+const dateBetweenFilter = (row: Row<Detection>, _columnId: string, filterValue: [string, string]) => {
+    const rowDate = new Date(row.original.date_detection)
     const [start, end] = filterValue
 
     if (start && rowDate < new Date(start)) return false
@@ -40,13 +40,14 @@ export const colonneDetection: ColumnDef<Detection>[] = [
         cell: ({ row }) => {
             const { alerte, reconnue } = row.original
 
-            if (alerte) {
-                return <Badge className="bg-red-500 text-white">Alerte</Badge>
-            }
             if (reconnue) {
                 return <Badge className="bg-green-500 text-white">Reconnue</Badge>
             }
-            return <Badge className="bg-gray-500 text-white">Non reconnue</Badge>
+            // alerte = plaque détectée mais rien de lisible
+            if (alerte) {
+                return <Badge className="bg-red-500 text-white">Illisible</Badge>
+            }
+            return <Badge className="bg-amber-500 text-white">À vérifier</Badge>
         },
     },
 ]

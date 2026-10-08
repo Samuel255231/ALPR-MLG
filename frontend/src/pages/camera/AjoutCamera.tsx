@@ -2,10 +2,8 @@ import React, { useEffect } from "react"
 import { Button } from "@/components/ui/button"
 import {
     Dialog,
-    DialogClose,
     DialogContent,
     DialogDescription,
-    DialogFooter,
     DialogHeader,
     DialogTitle,
 } from "@/components/ui/dialog"
@@ -16,7 +14,6 @@ import { z } from "zod"
 import {
     Form,
     FormControl,
-    FormDescription,
     FormField,
     FormItem,
     FormLabel,
@@ -44,7 +41,7 @@ const formSchema = z.object({
 
 const AjoutCamera: React.FC<AjoutCameraProps> = ({ open, setOpen }) => {
     const dispatch = useDispatch<AppDispatch>()
-    const { zones, loading, error } = useSelector((state: RootState) => state.zones)
+    const { zones } = useSelector((state: RootState) => state.zones)
     useEffect(() => {
         dispatch(fetchZones())
     }, [dispatch])

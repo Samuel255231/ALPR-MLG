@@ -8,7 +8,6 @@ import {
     DropdownMenuContent,
     DropdownMenuItem,
     DropdownMenuLabel,
-    DropdownMenuSeparator,
     DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu"
 import { Checkbox } from "@/components/ui/checkbox"
@@ -55,7 +54,7 @@ export const colonneZone: ColumnDef<Zone>[] = [
     },
     {
         id: "actions",
-        cell: ({ row }) => {
+        cell: function ActionsZone({ row }) {
             const dispatch = useDispatch<AppDispatch>()
             const zone = row.original
             const [editZone, setEditZone] = React.useState<boolean>(false)

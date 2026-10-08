@@ -21,45 +21,44 @@ import {
 
 const data = {
   user: {
-    // NavUser attend 'username' et 'role'
-    username: "shadcn",
-    email: "m@example.com",
-    role: "admin",              // doit être "admin" | "user" | "programme"
-    avatar: "/avatars/shadcn.jpg",
+    // NavUser lit le vrai utilisateur dans le store ; ces valeurs ne servent qu'à satisfaire le typage
+    username: "",
+    email: "",
+    role: "operateur" as const,
   },
   navMain: [
     {
       title: "Dashboard ALPR",
       url: "/",
       icon: BarChart3,
-      role: ['admin', 'quai', 'securite']
+      role: ['admin', 'operateur']
     },
-    
+
     {
       title: "Historiques des détections",
       url: "/detections",
       icon: ArrowRightLeft,
-      role: ['admin', 'quai']
+      role: ['admin', 'operateur']
     },
-  
+
     {
       title: "Zone",
       url: "/zone",
       icon: MapPinPen,
-      role: ['admin']
+      role: ['admin', 'operateur']
     },
-    
+
     {
       title: "Gestion caméras",
       url: "/camera",
       icon: FileVideoCamera,
-      role: ['admin']
+      role: ['admin', 'operateur']
     },
     {
       title: "Analyse ALPR",
       url: "/analyse",
       icon: Database,
-      role: ['admin', 'quai']
+      role: ['admin', 'operateur']
     },
     {
       title: "Utilisateurs",

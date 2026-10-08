@@ -1,5 +1,5 @@
 import { createSlice, createAsyncThunk, type PayloadAction } from "@reduxjs/toolkit"
-import api from "@/api/client"
+import api, { messageErreur } from "@/api/client"
 
 
 export interface User {
@@ -34,8 +34,8 @@ export const fetchUsers = createAsyncThunk<User[], void, { rejectValue: string }
         try {
             const response = await api.get<User[]>(API_PATH)
             return response.data
-        } catch (err: any) {
-            return rejectWithValue(err.response?.data || err.message)
+        } catch (err) {
+            return rejectWithValue(messageErreur(err))
         }
     }
 )
@@ -46,8 +46,8 @@ export const addUsers = createAsyncThunk<User, Omit<User, "id" | 'last_login' | 
         try {
             const response = await api.post<User>(`${API_PATH}registration/`, dataUser)
             return response.data
-        } catch (err: any) {
-            return rejectWithValue(err.response?.data || err.message)
+        } catch (err) {
+            return rejectWithValue(messageErreur(err))
         }
     }
 )
@@ -62,8 +62,8 @@ export const deleteUsers = createAsyncThunk<
         try {
             await api.delete(`${API_PATH}${id}/`)
             return id
-        } catch (err: any) {
-            return rejectWithValue(err.response?.data || err.message)
+        } catch (err) {
+            return rejectWithValue(messageErreur(err))
         }
     }
 )
@@ -82,8 +82,8 @@ export const toggleUserActive = createAsyncThunk<
                 is_active: response.data.is_active,
                 message: response.data.detail,
             }
-        } catch (err: any) {
-            return rejectWithValue(err.response?.data || "Erreur lors de la modification du statut.")
+        } catch (err) {
+            return rejectWithValue(messageErreur(err) || "Erreur lors de la modification du statut.")
         }
     }
 )
@@ -102,10 +102,8 @@ export const resetUserPassword = createAsyncThunk<
                 password2:password1
             })
             return { userId, message: response.data.detail }
-        } catch (err: any) {
-            return rejectWithValue(
-                err.response?.data?.detail || "Erreur lors de la réinitialisation du mot de passe"
-            )
+        } catch (err) {
+            return rejectWithValue(messageErreur(err) || "Erreur lors de la réinitialisation du mot de passe")
         }
     }
 )

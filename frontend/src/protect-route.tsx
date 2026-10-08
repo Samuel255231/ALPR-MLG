@@ -1,44 +1,40 @@
 import { useSelector } from "react-redux"
 import { Navigate, Outlet, useLocation, matchPath } from "react-router-dom"
 import type { RootState } from "@/redux/store"
+import type { Role } from "@/redux/slices/AuthSlice"
 
-// 🔐 Table de rôles par route
-const routeRoleMap: Record<string, string[]> = {
-  "/": ["admin","quai","securite"],
-  "/zone": ["admin"],
-  "/camera": ["admin"],
+// Rôles autorisés pour chaque page. Une page absente de cette liste est refusée.
+const routeRoleMap: Record<string, Role[]> = {
+  "/": ["admin", "operateur"],
+  "/detections": ["admin", "operateur"],
+  "/analyse": ["admin", "operateur"],
+  "/zone": ["admin", "operateur"],
+  "/camera": ["admin", "operateur"],
+  "/compte": ["admin", "operateur"],
+  "/motdepasse": ["admin", "operateur"],
   "/users": ["admin"],
-  "/detections":["admin","quai"],
 }
 
 const ProtectedRoute = () => {
   const { userToken } = useSelector((state: RootState) => state.auth)
   const userRole = userToken?.user?.role
   const location = useLocation()
-  const path = location.pathname
 
-  // Debug log to inspect auth state and path
-  // eslint-disable-next-line no-console
-  console.log('ProtectedRoute userToken:', userToken, 'userRole:', userRole, 'path:', path)
-
-  // 🧱 1️⃣ Pas connecté → rediriger vers login
+  // Pas connecté : retour à la page de connexion
   if (!userToken) {
     return <Navigate to="/login" replace />
   }
 
-  // 🔎 2️⃣ Trouver la route correspondante dans la map
-  const matchedEntry = Object.entries(routeRoleMap).find(([pattern]) =>
-    matchPath({ path: pattern, end: false }, path)
+  // On cherche la règle qui correspond exactement à cette page
+  const regle = Object.entries(routeRoleMap).find(([chemin]) =>
+    matchPath({ path: chemin, end: true }, location.pathname)
   )
+  const rolesAutorises = regle?.[1]
 
-  const allowedRoles = matchedEntry?.[1]
-
-  // 🚫 3️⃣ Si aucune correspondance OU rôle non autorisé
-  if (!allowedRoles || !allowedRoles.includes(userRole ||"")) {
+  if (!rolesAutorises || !userRole || !rolesAutorises.includes(userRole)) {
     return <Navigate to="/forbidden" replace />
   }
 
-  // ✅ 4️⃣ Accès autorisé
   return <Outlet />
 }
 

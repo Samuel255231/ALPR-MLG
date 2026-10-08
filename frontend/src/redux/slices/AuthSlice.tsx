@@ -1,9 +1,9 @@
 import { createSlice, createAsyncThunk, type PayloadAction } from "@reduxjs/toolkit"
-import api from "@/api/client"
+import api, { messageErreur } from "@/api/client"
 import { API_URL } from "@/config"
 import type { RootState } from "../store"
 
-export type Role = "admin"|"quai"| "securite"
+export type Role = "admin" | "operateur"
 // --------------------
 // 🔹 Types
 // --------------------
@@ -55,8 +55,8 @@ export const login = createAsyncThunk<TokenData, LoginParams, { rejectValue: str
         password,
       })
       return response.data as TokenData
-    } catch (error: any) {
-      return rejectWithValue(error.response?.data?.detail || "Login failed")
+    } catch (error) {
+      return rejectWithValue(messageErreur(error) || "Échec de la connexion")
     }
   }
 )
@@ -170,9 +170,6 @@ const authSlice = createSlice({
       .addCase(login.fulfilled, (state, action: PayloadAction<TokenData>) => {
         state.loading = false
         state.userToken = action.payload
-        // Debug: log payload before storing
-        // eslint-disable-next-line no-console
-        console.log('AuthSlice login.fulfilled payload:', action.payload)
         localStorage.setItem("userTokenAlpr", JSON.stringify(action.payload))
       })
       .addCase(login.rejected, (state, action) => {

@@ -1,10 +1,15 @@
 // src/redux/slices/ALPRSlice.ts
 import { createSlice, createAsyncThunk, type PayloadAction } from "@reduxjs/toolkit"
-import api from "@/api/client"
+import api, { messageErreur } from "@/api/client"
+
+export type StatutPlaque = "reconnue" | "a_verifier" | "illisible"
 
 interface PlateResult {
   numero: string
-  confidence: number
+  confidence: number          // confiance de la détection de la plaque
+  confiance_lecture: number   // confiance de la lecture du texte
+  conforme: boolean           // le texte respecte le format des plaques malgaches
+  statut: StatutPlaque
 }
 interface ALPRResponse {
   results: PlateResult[]
@@ -40,10 +45,9 @@ export const detectALPRVideo = createAsyncThunk<
 
       const res = await api.post<ALPRResponse>("/alpr/detect/", formData)
       return res.data
-    } catch (error: any) {
+    } catch (error) {
       // on affiche le message renvoyé par le backend quand il y en a un
-      const message = error.response?.data?.error ?? error.message ?? "Erreur inconnue"
-      return rejectWithValue(message)
+      return rejectWithValue(messageErreur(error))
     }
   }
 )

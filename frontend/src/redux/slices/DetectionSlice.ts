@@ -1,5 +1,5 @@
 import { createSlice, createAsyncThunk } from "@reduxjs/toolkit"
-import api from "@/api/client"
+import api, { messageErreur } from "@/api/client"
 
 export interface Detection {
     id: number
@@ -30,8 +30,8 @@ export const fetchDetections = createAsyncThunk<Detection[], void, { rejectValue
         try {
             const response = await api.get<Detection[]>(API_PATH)
             return response.data
-        } catch (err: any) {
-            return rejectWithValue(err.response?.data || err.message)
+        } catch (err) {
+            return rejectWithValue(messageErreur(err))
         }
     }
 )

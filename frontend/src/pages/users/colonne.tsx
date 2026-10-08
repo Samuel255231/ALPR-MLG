@@ -1,28 +1,27 @@
 "use client"
 
 import { type ColumnDef } from "@tanstack/react-table"
-import { Check, CheckCircle, Edit, IterationCw, MoreHorizontal, Trash, X, XCircle } from "lucide-react"
+import { Check, CheckCircle, IterationCw, MoreHorizontal, X, XCircle } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import {
     DropdownMenu,
     DropdownMenuContent,
     DropdownMenuItem,
     DropdownMenuLabel,
-    DropdownMenuSeparator,
     DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu"
 import { Checkbox } from "@/components/ui/checkbox"
 import { DataTableColumnHeader } from "@/components/datatable/data-table-column-header"
-import React, { useState } from "react"
-import { useDispatch, useSelector } from "react-redux"
-import type { AppDispatch, RootState } from "@/redux/store"
-import { deleteZone } from "@/redux/slices/ZoneSlice"
+import { useState } from "react"
+import { useDispatch } from "react-redux"
+import type { AppDispatch } from "@/redux/store"
 import dayjs from "dayjs"
 import relativeTime from "dayjs/plugin/relativeTime"
 import "dayjs/locale/fr"
 import { Badge } from "@/components/ui/badge"
-import { resetUserPassword, toggleUserActive } from "@/redux/slices/UserSlice"
+import { toggleUserActive } from "@/redux/slices/UserSlice"
 import ReinitialiserMotPasse from "./ReinitialiserMotPasse"
+import { libelleRole } from "@/lib/roles"
 dayjs.extend(relativeTime)
 dayjs.locale("fr")
 
@@ -81,7 +80,8 @@ export const colonneUser: ColumnDef<User>[] = [
     },
     {
         accessorKey: "role",
-        header: "Role",
+        header: "Rôle",
+        cell: ({ getValue }) => libelleRole(getValue<string>()),
     },
     {
         accessorKey: "email",
@@ -100,7 +100,6 @@ export const colonneUser: ColumnDef<User>[] = [
         header: "Status",
         cell: ({ getValue }) => {
             const isActive = getValue();
-            const color = isActive ? "text-green-800" : "text-red-800";
             const label = isActive ? "Activé" : "Désactivé";
             const Icon = isActive ? CheckCircle : XCircle;
             const bgClass = isActive
@@ -125,7 +124,7 @@ export const colonneUser: ColumnDef<User>[] = [
     },
     {
         id: "actions",
-        cell: ({ row }) => {
+        cell: function ActionsUtilisateur({ row }) {
             const dispatch = useDispatch<AppDispatch>()
             const user = row.original
             const isActive = user.is_active

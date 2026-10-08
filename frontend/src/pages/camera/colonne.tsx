@@ -1,14 +1,13 @@
 "use client"
 
 import { type ColumnDef } from "@tanstack/react-table"
-import { BadgeCheckIcon, CheckCircle, Edit, MoreHorizontal, Trash, Wrench, XCircle } from "lucide-react"
+import { CheckCircle, Edit, MoreHorizontal, Trash, Wrench, XCircle } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import {
     DropdownMenu,
     DropdownMenuContent,
     DropdownMenuItem,
     DropdownMenuLabel,
-    DropdownMenuSeparator,
     DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu"
 import { Checkbox } from "@/components/ui/checkbox"
@@ -18,7 +17,6 @@ import React from "react"
 import { useDispatch } from "react-redux"
 import type { AppDispatch } from "@/redux/store"
 import { deleteCamera, updateCamera } from "@/redux/slices/CameraSlice"
-import { Badge } from "@/components/ui/badge"
 import { StatusBadge } from "./StatusBadge"
 import EditCamera from "./EditCamera"
 
@@ -28,9 +26,9 @@ export type Camera = {
     id: number
     code: string,
     rtsp_url: string,
-    description: string,
+    description?: string,
     type: string,
-    zone: any,
+    zone: { id: number; nom: string },
     status: StatusType
 }
 
@@ -83,7 +81,7 @@ export const colonneCamera: ColumnDef<Camera>[] = [
     },
     {
         id: "actions",
-        cell: ({ row }) => {
+        cell: function ActionsCamera({ row }) {
             const dispatch = useDispatch<AppDispatch>()
             const camera = row.original
             const status = camera.status

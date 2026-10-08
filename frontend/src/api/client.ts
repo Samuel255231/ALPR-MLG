@@ -24,12 +24,29 @@ api.interceptors.request.use((config) => {
 api.interceptors.response.use(
     (reponse) => reponse,
     (erreur) => {
-        if (erreur.response?.status === 401 && localStorage.getItem(TOKEN_KEY)) {
+        // (une erreur 401 sur la connexion elle-même veut seulement dire « mauvais identifiants »)
+        const estConnexion = erreur.config?.url?.includes("/users/login/")
+        if (erreur.response?.status === 401 && !estConnexion && localStorage.getItem(TOKEN_KEY)) {
             localStorage.removeItem(TOKEN_KEY)
             window.location.href = "/login"
         }
         return Promise.reject(erreur)
     }
 )
+
+// Texte d'erreur à afficher à partir d'une erreur d'appel API
+export function messageErreur(erreur: unknown): string {
+    if (axios.isAxiosError(erreur)) {
+        const data = erreur.response?.data
+        if (typeof data === "string" && data) return data
+        if (data && typeof data === "object") {
+            // le backend renvoie soit {"detail": "..."} soit {"champ": ["message"]}
+            const detail = (data as { detail?: unknown; error?: unknown }).detail ?? (data as { error?: unknown }).error
+            return typeof detail === "string" ? detail : JSON.stringify(data)
+        }
+        return erreur.message
+    }
+    return erreur instanceof Error ? erreur.message : "Erreur inconnue"
+}
 
 export default api

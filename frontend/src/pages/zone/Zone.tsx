@@ -5,10 +5,14 @@ import { useDispatch, useSelector } from 'react-redux'
 import { DataTable } from './data-table'
 import { colonneZone } from './colonne'
 import { Card } from '@/components/ui/card'
+import { useRole } from '@/hooks/use-role'
 
 const Zone: React.FC = () => {
     const dispatch = useDispatch<AppDispatch>()
-    const { zones, loading, error } = useSelector((state: RootState) => state.zones)
+    const { zones } = useSelector((state: RootState) => state.zones)
+    const { estAdmin } = useRole()
+    // l'opérateur consulte les zones mais ne peut pas les modifier
+    const colonnes = estAdmin ? colonneZone : colonneZone.filter((c) => c.id !== "actions")
     useEffect(() => {
         dispatch(fetchZones())
     }, [dispatch])
@@ -19,7 +23,7 @@ const Zone: React.FC = () => {
                 <p className="text-gray-600">Zones couvertes par les caméras</p>
             </div>
             <Card>
-                <DataTable columns={colonneZone} data={zones} />
+                <DataTable columns={colonnes} data={zones} />
             </Card>
         </div>
     )

@@ -3,7 +3,7 @@ import { API_URL } from "@/config"
 import { useDispatch, useSelector } from "react-redux"
 import type { AppDispatch, RootState } from "@/redux/store"
 import { fetchCameras } from "@/redux/slices/CameraSlice"
-import { detectALPRVideo, resetALPR } from "@/redux/slices/ALPRSlice"
+import { detectALPRVideo, resetALPR, type StatutPlaque } from "@/redux/slices/ALPRSlice"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
@@ -21,7 +21,6 @@ const AnalyseALPR: React.FC = () => {
   const [file, setFile] = useState<File | null>(null)
   const [preview, setPreview] = useState<string | null>(null)
   const [cameraId, setCameraId] = useState<string>("")
-  const [confidenceThreshold, setConfidenceThreshold] = useState<number>(0.6)
 
   // Charger les caméras
   useEffect(() => {
@@ -53,16 +52,22 @@ const AnalyseALPR: React.FC = () => {
     }))
   }
 
-  const getStatusColor = (confidence: number) => {
-    if (confidence > 0.7) return "text-green-600"
-    if (confidence > 0.4) return "text-yellow-600"
+  const getStatusColor = (statut: StatutPlaque) => {
+    if (statut === "reconnue") return "text-green-600"
+    if (statut === "a_verifier") return "text-yellow-600"
     return "text-red-600"
   }
 
-  const getStatusIcon = (confidence: number) => {
-    if (confidence > 0.7) return <CheckCircle className="w-4 h-4 text-green-500" />
-    if (confidence > 0.4) return <Eye className="w-4 h-4 text-yellow-500" />
+  const getStatusIcon = (statut: StatutPlaque) => {
+    if (statut === "reconnue") return <CheckCircle className="w-4 h-4 text-green-500" />
+    if (statut === "a_verifier") return <Eye className="w-4 h-4 text-yellow-500" />
     return <AlertCircle className="w-4 h-4 text-red-500" />
+  }
+
+  const libelleStatut: Record<StatutPlaque, string> = {
+    reconnue: "Reconnue",
+    a_verifier: "À vérifier",
+    illisible: "Illisible",
   }
 
   return (
@@ -127,27 +132,9 @@ const AnalyseALPR: React.FC = () => {
                   </p>
                 </div>
 
-                {/* Paramètres */}
-                <div className="space-y-2 pt-4 border-t">
-                  <div className="flex justify-between">
-                    <Label htmlFor="confidenceThreshold">Seuil de confiance</Label>
-                    <span className="text-sm font-medium">{confidenceThreshold.toFixed(2)}</span>
-                  </div>
-                  <input
-                    id="confidenceThreshold"
-                    type="range"
-                    min="0.1"
-                    max="1"
-                    step="0.05"
-                    value={confidenceThreshold}
-                    onChange={(e) => setConfidenceThreshold(parseFloat(e.target.value))}
-                    className="w-full"
-                    aria-label="Seuil de confiance pour la détection"
-                    title={`Seuil actuel: ${confidenceThreshold}`}
-                  />
-                  <p className="text-sm text-gray-500">
-                    Seuil minimum pour considérer une détection valide
-                  </p>
+                <div className="space-y-1 pt-4 border-t text-sm text-gray-500">
+                  <p>Vidéo : 60 secondes maximum. Le traitement peut durer une à deux minutes.</p>
+                  <p>Une plaque est « reconnue » quand son texte respecte le format malgache (ex. 1844 TAH).</p>
                 </div>
               </div>
 
@@ -238,13 +225,13 @@ const AnalyseALPR: React.FC = () => {
                 </div>
                 <div className="text-center p-4 bg-green-50 rounded-lg border border-green-100">
                   <p className="text-2xl font-bold text-green-700">
-                    {data.results.filter(r => r.confidence > 0.7).length}
+                    {data.results.filter(r => r.statut === "reconnue").length}
                   </p>
-                  <p className="text-sm text-gray-600">Reconnues avec certitude</p>
+                  <p className="text-sm text-gray-600">Reconnues</p>
                 </div>
                 <div className="text-center p-4 bg-yellow-50 rounded-lg border border-yellow-100">
                   <p className="text-2xl font-bold text-yellow-700">
-                    {data.results.filter(r => r.confidence <= 0.4).length}
+                    {data.results.filter(r => r.statut !== "reconnue").length}
                   </p>
                   <p className="text-sm text-gray-600">À vérifier</p>
                 </div>
@@ -258,7 +245,7 @@ const AnalyseALPR: React.FC = () => {
                     <thead className="bg-gray-50">
                       <tr>
                         <th className="p-3 text-left font-semibold">Plaque</th>
-                        <th className="p-3 text-left font-semibold">Confiance</th>
+                        <th className="p-3 text-left font-semibold">Confiance de lecture</th>
                         <th className="p-3 text-left font-semibold">Statut</th>
                       </tr>
                     </thead>
@@ -271,21 +258,20 @@ const AnalyseALPR: React.FC = () => {
                               <div className="w-32 bg-gray-200 rounded-full h-2.5">
                                 <div 
                                   className={`h-full rounded-full ${
-                                    result.confidence > 0.7 ? "bg-green-500" :
-                                    result.confidence > 0.4 ? "bg-yellow-500" : "bg-red-500"
+                                    result.statut === "reconnue" ? "bg-green-500" :
+                                    result.statut === "a_verifier" ? "bg-yellow-500" : "bg-red-500"
                                   }`}
-                                  style={{ width: `${result.confidence * 100}%` }}
+                                  style={{ width: `${result.confiance_lecture * 100}%` }}
                                 />
                               </div>
-                              <span className="font-medium">{(result.confidence * 100).toFixed(1)}%</span>
+                              <span className="font-medium">{(result.confiance_lecture * 100).toFixed(0)}%</span>
                             </div>
                           </td>
                           <td className="p-3">
                             <div className="flex items-center gap-2">
-                              {getStatusIcon(result.confidence)}
-                              <span className={getStatusColor(result.confidence)}>
-                                {result.confidence > 0.7 ? "Reconnue" :
-                                 result.confidence > 0.4 ? "Incertaine" : "À vérifier"}
+                              {getStatusIcon(result.statut)}
+                              <span className={getStatusColor(result.statut)}>
+                                {libelleStatut[result.statut]}
                               </span>
                             </div>
                           </td>

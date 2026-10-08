@@ -1,9 +1,8 @@
 import { Card } from '@/components/ui/card'
 import { Input } from '@/components/ui/input'
-import { Label } from '@/components/ui/label'
-import type { AppDispatch, RootState } from '@/redux/store'
+import type { AppDispatch } from '@/redux/store'
 import React, { useState } from 'react'
-import { useDispatch, useSelector } from 'react-redux'
+import { useDispatch } from 'react-redux'
 import { zodResolver } from "@hookform/resolvers/zod"
 import { useForm } from "react-hook-form"
 import { z } from "zod"
@@ -58,7 +57,7 @@ const MotdePasse: React.FC = () => {
         visible,
         toggleVisible,
     }: {
-        field: any
+        field: React.ComponentProps<typeof Input>
         label: string
         visible: boolean
         toggleVisible: () => void

@@ -1,5 +1,5 @@
 import { createSlice, createAsyncThunk, type PayloadAction } from "@reduxjs/toolkit"
-import api from "@/api/client"
+import api, { messageErreur } from "@/api/client"
 
 export interface Zone {
     id: number
@@ -24,8 +24,8 @@ export const fetchZones = createAsyncThunk<Zone[], void, { rejectValue: string }
         try {
             const response = await api.get<Zone[]>(API_PATH)
             return response.data
-        } catch (err: any) {
-            return rejectWithValue(err.response?.data || err.message)
+        } catch (err) {
+            return rejectWithValue(messageErreur(err))
         }
     }
 )
@@ -36,8 +36,8 @@ export const addZone = createAsyncThunk<Zone, Omit<Zone, "id">, { rejectValue: s
         try {
             const response = await api.post<Zone>(API_PATH, zoneDate)
             return response.data
-        } catch (err: any) {
-            return rejectWithValue(err.response?.data || err.message)
+        } catch (err) {
+            return rejectWithValue(messageErreur(err))
         }
     }
 )
@@ -51,8 +51,8 @@ export const updateZone = createAsyncThunk<
         try {
             const response = await api.put<Zone>(`${API_PATH}${zoneData.id}/`, zoneData)
             return response.data
-        } catch (err: any) {
-            return rejectWithValue(err.response?.data || err.message)
+        } catch (err) {
+            return rejectWithValue(messageErreur(err))
         }
     }
 )
@@ -67,8 +67,8 @@ export const deleteZone = createAsyncThunk<
         try {
             await api.delete(`${API_PATH}${id}/`)
             return id
-        } catch (err: any) {
-            return rejectWithValue(err.response?.data || err.message)
+        } catch (err) {
+            return rejectWithValue(messageErreur(err))
         }
     }
 )

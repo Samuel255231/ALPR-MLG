@@ -5,10 +5,14 @@ import { DataTable } from './data-table'
 import { colonneCamera } from './colonne'
 import { fetchCameras } from '@/redux/slices/CameraSlice'
 import { Card } from '@/components/ui/card'
+import { useRole } from '@/hooks/use-role'
 
 const Camera: React.FC = () => {
     const dispatch = useDispatch<AppDispatch>()
-    const { cameras, loading, error } = useSelector((state: RootState) => state.cameras)
+    const { cameras } = useSelector((state: RootState) => state.cameras)
+    const { estAdmin } = useRole()
+    // l'opérateur consulte les caméras mais ne peut pas les modifier
+    const colonnes = estAdmin ? colonneCamera : colonneCamera.filter((c) => c.id !== "actions")
     useEffect(() => {
         dispatch(fetchCameras())
     }, [dispatch])
@@ -19,7 +23,7 @@ const Camera: React.FC = () => {
                 <p className="text-gray-600">Surveillance et détection des plaques par caméra</p>
             </div>
             <Card>
-                <DataTable columns={colonneCamera} data={cameras} />
+                <DataTable columns={colonnes} data={cameras} />
             </Card>
         </div>
     )

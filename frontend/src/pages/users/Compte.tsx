@@ -1,6 +1,7 @@
 import { Card } from '@/components/ui/card'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
+import { libelleRole } from '@/lib/roles'
 import type { RootState } from '@/redux/store'
 import React from 'react'
 import { useSelector } from 'react-redux'
@@ -37,7 +38,7 @@ const Compte: React.FC = () => {
                 </div>
                 <div className="grid w-full items-center gap-3">
                     <Label htmlFor="email">Rôle</Label>
-                    <Input type="text" value={role} disabled />
+                    <Input type="text" value={libelleRole(role)} disabled />
                 </div>
             </Card>
         </div>

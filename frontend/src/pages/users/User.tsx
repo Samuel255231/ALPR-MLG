@@ -8,7 +8,7 @@ import { colonneUser } from './colonne'
 
 const User:React.FC = () => {
   const dispatch = useDispatch<AppDispatch>()
-    const { users, loading, error } = useSelector((state: RootState) => state.users)
+    const { users } = useSelector((state: RootState) => state.users)
     useEffect(() => {
         dispatch(fetchUsers())
     }, [dispatch])

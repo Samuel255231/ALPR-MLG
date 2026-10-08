@@ -49,8 +49,8 @@ export function DataTable({ data }: { data: Detection[] }) {
     })
 
     const statutTexte = (d: Detection) => {
-        if (d.alerte) return "Alerte"
-        return d.reconnue ? "Reconnue" : "Non reconnue"
+        if (d.reconnue) return "Reconnue"
+        return d.alerte ? "Illisible" : "À vérifier"
     }
 
     // Exporte les lignes qui passent les filtres actuels
