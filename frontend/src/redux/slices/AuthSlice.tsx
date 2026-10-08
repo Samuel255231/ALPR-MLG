@@ -81,7 +81,7 @@ export const refreshToken = createAsyncThunk<TokenData, void, { state: RootState
           refresh: data.refresh,
           user: userToken?.user,
         }
-        localStorage.setItem("userTokenBigbag", JSON.stringify(newToken))
+        localStorage.setItem("userTokenAlpr", JSON.stringify(newToken))
         return newToken
       } else {
         return rejectWithValue("Token expired")
@@ -120,7 +120,7 @@ export const updatePassword = createAsyncThunk<TokenData, UpdatePasswordParams, 
           refresh: data.refresh,
           user: userToken?.user,
         }
-        localStorage.setItem("userTokenBigbag", JSON.stringify(newToken))
+        localStorage.setItem("userTokenAlpr", JSON.stringify(newToken))
         return newToken
       } else {
         return rejectWithValue("Token expired")
@@ -134,8 +134,8 @@ export const updatePassword = createAsyncThunk<TokenData, UpdatePasswordParams, 
 // --------------------
 // 🔹 Initial State
 // --------------------
-const userToken: TokenData | null = localStorage.getItem("userTokenBigbag")
-  ? JSON.parse(localStorage.getItem("userTokenBigbag") as string)
+const userToken: TokenData | null = localStorage.getItem("userTokenAlpr")
+  ? JSON.parse(localStorage.getItem("userTokenAlpr") as string)
   : null
 
 const initialState: AuthState = {
@@ -153,7 +153,7 @@ const authSlice = createSlice({
   initialState,
   reducers: {
     logout: (state) => {
-      localStorage.removeItem("userTokenBigbag")
+      localStorage.removeItem("userTokenAlpr")
       state.loading = false
       state.error = null
       state.userToken = null
@@ -172,7 +172,7 @@ const authSlice = createSlice({
         // Debug: log payload before storing
         // eslint-disable-next-line no-console
         console.log('AuthSlice login.fulfilled payload:', action.payload)
-        localStorage.setItem("userTokenBigbag", JSON.stringify(action.payload))
+        localStorage.setItem("userTokenAlpr", JSON.stringify(action.payload))
       })
       .addCase(login.rejected, (state, action) => {
         state.loading = false
@@ -185,7 +185,7 @@ const authSlice = createSlice({
         state.loading = false
       })
       .addCase(refreshToken.rejected, (state) => {
-        localStorage.removeItem("userTokenBigbag")
+        localStorage.removeItem("userTokenAlpr")
         state.userToken = null
         state.loading = false
       })

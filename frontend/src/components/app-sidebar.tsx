@@ -16,9 +16,6 @@ import {
   Database,
   FileVideoCamera,
   MapPinPen,
-  /*
-  SwitchCamera,*/
-  Truck,
   User
 } from "lucide-react"
 
@@ -40,7 +37,7 @@ const data = {
     
     {
       title: "Historiques des détections",
-      url: "/mouvement",
+      url: "/detections",
       icon: ArrowRightLeft,
       role: ['admin', 'quai']
     },
@@ -59,25 +56,11 @@ const data = {
       role: ['admin']
     },
     {
-      title: "Base de données véhicules",
-      url: "/camion",
-      icon: Truck,
-      role: ['admin', 'quai', 'securite']
-    },
-    {
       title: "Analyse ALPR",
       url: "/analyse",
       icon: Database,
       role: ['admin', 'quai']
     },
-    /*
-    {
-      title: "Monitoring & Logs",
-      url: "/surveillance",
-      icon: SwitchCamera,
-      role: ['admin', 'quai']
-    },
-    */
     {
       title: "Utilisateurs",
       url: "/users",

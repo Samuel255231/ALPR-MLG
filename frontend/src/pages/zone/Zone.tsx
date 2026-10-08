@@ -15,8 +15,8 @@ const Zone: React.FC = () => {
     return (
         <div className='p-4 space-y-6'>
             <div>
-                <h2 className="text-2xl font-bold text-gray-900">Zone de stock</h2>
-                <p className="text-gray-600">Zone d'entrée et sortie du camion</p>
+                <h2 className="text-2xl font-bold text-gray-900">Zones de surveillance</h2>
+                <p className="text-gray-600">Zones couvertes par les caméras</p>
             </div>
             <Card>
                 <DataTable columns={colonneZone} data={zones} />

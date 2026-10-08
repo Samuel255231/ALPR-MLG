@@ -16,7 +16,7 @@ const Camera: React.FC = () => {
         <div className='p-4 space-y-6'>
             <div>
                 <h2 className="text-2xl font-bold text-gray-900">Camera de suirveillance</h2>
-                <p className="text-gray-600">Suirveillance et detection des bigbags entrée et sortie</p>
+                <p className="text-gray-600">Surveillance et détection des plaques par caméra</p>
             </div>
             <Card>
                 <DataTable columns={colonneCamera} data={cameras} />

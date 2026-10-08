@@ -25,7 +25,7 @@ export function LoginForm({
 
   // Redirection si déjà connecté
   useEffect(() => {
-    const storedToken = localStorage.getItem('userTokenBigbag');
+    const storedToken = localStorage.getItem('userTokenAlpr');
     console.log('LoginForm.useEffect storedToken:', storedToken, 'redux userToken:', userToken)
     if (storedToken || userToken) {
       navigate('/')

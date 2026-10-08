@@ -8,10 +8,7 @@ const routeRoleMap: Record<string, string[]> = {
   "/zone": ["admin"],
   "/camera": ["admin"],
   "/users": ["admin"],
-  "/mouvement":["admin","quai"],
-  "/camion":["admin","quai","securite"],
-  "/entrainement":["admin","quai"],
-  "/surveillance":["admin","quai"],
+  "/detections":["admin","quai"],
 }
 
 const ProtectedRoute = () => {
